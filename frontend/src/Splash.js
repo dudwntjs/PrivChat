@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import gavelImage from "./images/gavel.png"; // 이미지 경로를 정확히 import
+import gavelImage from "./images/gavel.png";
 
 function Splash() {
   const navigate = useNavigate();
@@ -36,19 +36,16 @@ const styles = {
     position: "relative",
   },
   imageContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
     width: "100%",
-    height: "100%",
-    overflow: "hidden",
-    zIndex: -1,
+    height: "50vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
   },
   image: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    filter: "brightness(0.8)",
+    maxWidth: "60%",
+    maxHeight: "100%",
+    objectFit: "contain",
   },
   title: {
     fontSize: "32px",
