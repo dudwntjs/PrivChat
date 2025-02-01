@@ -1,58 +1,51 @@
 import json
-import requests
-from pymongo import MongoClient
-from langchain_community.vectorstores import FAISS
-from langchain.docstore.document import Document
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv, find_dotenv
+from pymongo import MongoClient
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.docstore.document import Document
 
 # 환경 변수 로드
-load_dotenv()
-clova_api_key = os.getenv("CLOVA_API_KEY")
+dotenv_path = find_dotenv()  # .env 파일을 자동으로 찾습니다.
+if not dotenv_path:
+    raise FileNotFoundError("❌ .env 파일을 찾을 수 없습니다.")
 
-# ✅ MongoDB 연결
+load_dotenv(dotenv_path)  # .env 파일 로드
+
+# OPENAI_API_KEY 환경 변수 로드
+openai_api_key = os.getenv("OPENAI_API_KEY")
+if not openai_api_key:
+    raise ValueError("❌ OPENAI_API_KEY가 .env 파일에 설정되어 있지 않습니다.")
+
+print("✅ OPENAI_API_KEY 로드 완료!")
+
+# MongoDB 연결
 client = MongoClient("mongodb://localhost:27017/")
 db = client["law_database"]
 cases_collection = db["cases"]
 
-# ✅ HyperCLOVA X 임베딩 API 호출 함수
-def generate_embedding(text):
-    url = "https://clovastudio.stream.ntruss.com/testapp/v1/api-tools/embedding/clir-emb-dolphin/{app-id}"  
-    headers = {
-        "Authorization": f"Bearer {clova_api_key}",  # ✅ Bearer 인증 방식 적용
-        "Content-Type": "application/json; charset=utf-8"
-    }
-    payload = {
-        "text": text
-    }
-    
-    response = requests.post(url, headers=headers, json=payload)
-    
-    if response.status_code == 200:
-        return response.json()["result"]["embedding"]  # ✅ 1024차원 벡터 반환
-    else:
-        print(f"❌ 오류 발생: {response.json()}")
-        return None
+# OpenAI 임베딩 사용
+embedding_model = OpenAIEmbeddings(model="text-embedding-ada-002")
 
-# ✅ 판례 데이터를 벡터화하여 FAISS에 저장하는 함수
-def vectorize_cases():
+# 벡터 저장소 생성 함수
+def create_vector_store():
     documents = []
-    cases = cases_collection.find({}, {"_id": 0, "판례일련번호": 1, "판결요지": 1}).limit(100)
+    
+    # 판례 데이터 불러오기
+    cases = cases_collection.find({}, {"_id": 0, "판례일련번호": 1, "판결요지": 1}).limit(100)  # 판결요지만 사용
 
     for case in cases:
         case_text = f"판례일련번호: {case['판례일련번호']}\n{case['판결요지']}"
-        embedding_vector = generate_embedding(case_text)  # ✅ HyperCLOVA X 임베딩 호출
+        doc = Document(page_content=case_text, metadata={"id": case["판례일련번호"]})
+        documents.append(doc)
 
-        if embedding_vector:
-            doc = Document(page_content=case_text, metadata={"id": case["판례일련번호"], "embedding": embedding_vector})
-            documents.append(doc)
-
-    # ✅ FAISS 벡터 저장소 생성 및 저장
-    vectorstore = FAISS.from_documents(documents, embedding=embedding_vector)  
+    # 벡터 저장소 생성
+    vectorstore = FAISS.from_documents(documents, embedding_model)
     vectorstore.save_local("faiss_index")
 
     print("✅ 벡터 저장소 생성 완료!")
 
-# ✅ 데이터 벡터화 실행
+# 메인 실행 부분
 if __name__ == "__main__":
-    vectorize_cases()
+    create_vector_store()
