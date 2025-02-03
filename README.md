@@ -1,7 +1,9 @@
 # 📜 개인정보 판례 검색 및 요약 시스템 (RAG 기반 AI)  
 
-> **LangChain + LLM 기반 RAG 모델을 활용한 개인정보 판례 검색 & 요약 시스템**  
-> AI를 통해 개인정보 관련 판례를 검색하고, 법적 판단을 요약하여 제공하는 서비스입니다.
+![스플래시 화면](https://github.com/dudwntjs/PrivChat/blob/main/frontend/assets/Splash.png?raw=true)
+
+**LangChain + LLM 기반 RAG 모델을 활용한 개인정보 판례 검색 & 요약 시스템**  
+AI를 통해 개인정보 관련 판례를 검색하고, 법적 판단을 요약하여 제공하는 서비스입니다.
 
 ---
 
@@ -64,6 +66,15 @@ python backend/mongo_insert.py
 - "개인정보 유출 시 기업이 받을 법적 처벌은?"
 - "개인정보 보호법 위반 시 손해배상 범위는?"
 - "비식별화된 데이터도 법적으로 보호받을 수 있는가?"
+
+![채팅 화면](https://github.com/dudwntjs/PrivChat/blob/main/frontend/assets/Chat.png?raw=true)
+
+---
+## 🚫 비관련 질문에 대한 응답 제한
+- 법률과 무관한 질문에는 답변하지 않음
+- 할루시네이션(잘못된 정보 생성) 방지
+
+![채팅 화면2](https://github.com/dudwntjs/PrivChat/blob/main/frontend/assets/Chat2.png?raw=true) 
 
 ---
 
